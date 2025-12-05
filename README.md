@@ -22,19 +22,18 @@ Embedding 版と Keyword 版の2種類の検索方法を選べます。
 
 ```mermaid
 flowchart TD
-
-    User[User (PC User)]
-    UI[Streamlit UI<br/>locallm/app/*.py]
-    Knowledge[knowledge.txt<br/>system_prompt.txt<br/>uploads/*.txt *.md *.csv]
-    Logs[logs/*.jsonl<br/>(local only)]
-    Embed[Embedding<br/>OpenAI/Azure/RakutenAI API]
-    LLM[LLM API<br/>OpenAI/Azure/RakutenAI<br/>(stateless)]
+    User["User (PC User)"]
+    UI["Lilot UI (Streamlit)"]
+    Embed["Embedding Engine (MiniLM)"]
+    LLM["Local LLM"]
+    Docs["Knowledge Base (knowledge.txt + uploads)"]
 
     User --> UI
-    UI --> Knowledge
-    UI --> Logs
+    UI --> LLM
     UI --> Embed
-    Embed --> LLM
+    Embed --> Docs
+    Docs --> Embed
+    LLM --> UI
 ```
 
 ---
