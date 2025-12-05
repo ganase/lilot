@@ -22,18 +22,31 @@ Embedding 版と Keyword 版の2種類の検索方法を選べます。
 
 ```mermaid
 flowchart TD
-    User["User (PC User)"]
-    UI["Lilot UI (Streamlit)"]
-    Embed["Embedding Engine (MiniLM)"]
-    LLM["Local LLM"]
-    Docs["Knowledge Base (knowledge.txt + uploads)"]
 
-    User --> UI
-    UI --> LLM
-    UI --> Embed
-    Embed --> Docs
-    Docs --> Embed
-    LLM --> UI
+User["User (Local PC)"]
+UI["Lilot UI (Streamlit)"]
+SP["system_prompt.txt"]
+KB["knowledge.txt"]
+EMB["MiniLM Local Embedding Model (all-MiniLM-L6-v2)"]
+API["(Optional) OpenAI-compatible LLM API"]
+HIS["Local Chat Logs (logs/*.json)"]
+
+User --> UI
+
+subgraph "Local Knowledge Search"
+UI --> KB
+UI --> SP
+UI --> EMB
+KB --> EMB
+EMB --> UI
+end
+
+subgraph "LLM (Optional API Mode)"
+UI --> API
+API --> UI
+end
+
+UI --> HIS
 ```
 
 ---
