@@ -48,7 +48,7 @@ if errorlevel 1 (
 
 echo.
 echo [INFO] All dependencies installed successfully.
-echo [INFO] You can now run "run_app_kwm.bat".
+echo [INFO] You can now run "run_app_emb.bat".
 echo.
 pause
 
