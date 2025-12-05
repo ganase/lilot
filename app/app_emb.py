@@ -48,6 +48,9 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 LOGO_PATH = (BASE_DIR / "lilot.png").resolve()
 FAVICON_PATH = (BASE_DIR / "lilot_mark.png").resolve()
 
+# .env のパス（追加）
+ENV_PATH = (BASE_DIR / ".env").resolve()
+
 
 def _get_log_path() -> Path:
     date_str = datetime.now().strftime("%Y%m%d")
@@ -358,7 +361,7 @@ def main():
                 st.caption("knowledge.txt の冒頭100文字")
                 st.write(docs[0][:100])
 
-            if st.button("knowledge.txt をメモ帳で開く", use_container_width=True):
+            if st.button("knowledge編集", use_container_width=True):
                 open_with_notepad(kp)
 
         with st.expander("🧠 system_prompt 設定", expanded=False):
@@ -379,8 +382,30 @@ def main():
             else:
                 st.caption("system_prompt.txt がありません。")
 
-            if st.button("system_prompt.txt をメモ帳で開く", use_container_width=True):
+            if st.button("system_prompt設定", use_container_width=True):
                 open_with_notepad(sp)
+
+        # ここから追加：.env 編集セクション
+        with st.expander("⚙️ .env 編集", expanded=False):
+            st.caption(".env Path:")
+            st.code(str(ENV_PATH))
+
+            if ENV_PATH.exists():
+                try:
+                    t = ENV_PATH.read_text(encoding="utf-8").strip()
+                    if t:
+                        st.caption("冒頭100文字")
+                        st.write(t[:100])
+                    else:
+                        st.caption(".env は空です。")
+                except Exception as e:
+                    st.caption(f"読み込み失敗: {e}")
+            else:
+                st.caption(".env がありません。")
+
+            if st.button(".env を編集", use_container_width=True):
+                open_with_notepad(ENV_PATH)
+        # 追加ここまで
 
         with st.expander("🔧 環境情報", expanded=False):
             st.write(f"[LLM] Base URL : `{LLM_BASE_URL}`")
