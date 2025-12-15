@@ -122,16 +122,19 @@ LLM API は ステートレス
 knowledge.txt / uploads / logs はすべて ローカルのみ
 API利用時も送信されるのは 上位数文のみ
 ## 🧑‍💻 Setup Guide
-1. Miniforge をインストール
+1. お使いのWindowsパソコンにMiniforge をインストール。その際、インストールフォルダは　C:\Users\<User Name>\miniforge3　とする。
 https://github.com/conda-forge/miniforge
-2. lilot.zip を任意のフォルダに展開
-3. ローカルモデルを設置→[こちらを参照](https://github.com/ganase/lilot/tree/main/models#all-minilm-l6)
-4.  setup.bat を実行
-Miniforge 自動検出
-必要モジュールインストール
-Desktop にショートカット作成
-6. 起動
-Lilot (Embedding Search)
+2. こちらのアドレスを開き、https://github.com/ganase/lilot　CODEボタンをクリック→Download ZIPを選択。
+3. lilot-main.zip をパソコンの任意のフォルダに保存、解凍する。（例：C:\lilot\*.*）
+5. ローカルモデルを設置→[こちらを参照](https://github.com/ganase/lilot/tree/main/models#all-minilm-l6)
+6.  C:\lilot\setup.bat を実行（Miniforge 自動検出, 必要モジュールインストール, Desktop にショートカット作成）
+7. 起動：デスクトップの　lilot　のアイコンをダブルクリック
+8. ブラウザが立ち上がったら、左下の .env編集を展開、.envを編集をクリック
+9. 別途案内している情報を　.env　に記入してメモ帳を保存。
+10. .env, knowledge.txtなどローカルファイルの変更後、有効にするにはlilot再起動が必要です。
+11. Lilotが開いているブラウザを閉じる。
+12. コマンドプロンプトを開いてCTRL+Cを押下。Terminate batch job (Y/N)?にYで応答
+13. デスクトップの　lilot　のアイコンをダブルクリック。
 
 ## 📌 Usage Example
 knowledge.txt を書き換えるだけで検索結果に反映されます。
