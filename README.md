@@ -125,11 +125,12 @@ API利用時も送信されるのは 上位数文のみ
 1. Miniforge をインストール
 https://github.com/conda-forge/miniforge
 2. lilot.zip を任意のフォルダに展開
-3. setup.bat を実行
+3. ローカルモデルを設置→[こちらを参照](https://github.com/ganase/lilot/tree/main/models#all-minilm-l6)
+4.  setup.bat を実行
 Miniforge 自動検出
 必要モジュールインストール
 Desktop にショートカット作成
-4. 起動
+6. 起動
 Lilot (Embedding Search)
 
 ## 📌 Usage Example
