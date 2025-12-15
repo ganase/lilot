@@ -12,6 +12,6 @@ setup.batを実行することでセットアップされます。
 
 ３．フォルダとファイルを一つずつダウンロードして、パソコンに同じフォルダ構造で保存。
 
-４．lilotのフォルダに次の通り配置する。lilot\models\all-MiniLM-L6-v2\<ダウンロードしてフォルダ＆ファイル>
+４．lilotのフォルダに次の通り配置する。lilot\models\all-MiniLM-L6-v2\<ダウンロードしたフォルダ＆ファイル>
 
 # Large Language Model(=LLM)現在未対応です。
