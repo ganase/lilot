@@ -1,148 +1,117 @@
-# Lilot  
-ローカルナレッジ検索 × ローカル / クラウド LLM  （Embedding Search 対応）
+# Lilot
+ローカルナレッジ検索 × OpenAI互換API（Embedding Search / ローカルRAG）
 
 ---
 
 ## 📌 Overview
+**Lilot（リロ）** は、ローカルPC上のナレッジ（`data/knowledge.txt` と `data/uploads/`）を **Embedding検索（ベクトル検索）** で参照し、
+必要に応じて **OpenAI互換API（OpenAI / Azure OpenAI / LocalAI / LM Studio など）** に問い合わせて回答を生成する、Streamlit製のローカルRAGチャットアプリです。
 
-**Lilot（リロ）** は、ローカル PC に保存したナレッジ (`knowledge.txt` など) を  
-**ベクトル検索（MiniLM Embedding）** によって取得し、  必要に応じて **OpenAI / Azure / RakutenAI / OpenAI互換API** の LLM に渡して回答を生成するアプリです。
-
-- データはすべてローカル保存 → **情報漏えいリスク最小化**
-- MiniLM ローカルモデル同梱 → **Embedding 検索がオフライン動作**
-- setup.bat による完全自動セットアップ → **初心者でも簡単**
-- 個人用ナレッジ管理から企業 FAQ システムまで幅広く対応
+- 検索方式：**Embedding検索のみ**（Keyword検索は廃止）
+- Embedding：**ローカル MiniLM** / **リモート Embedding API（OpenAI互換）** 切替
+- LLM：**OpenAI互換API**（ローカルLLM直結は未実装）
+- ナレッジ / ログ / アップロードファイルは **すべてローカル保存**
 
 ---
 
-# 🏗️ System Architecture
-
-```mermaid
-flowchart TD
-    User["User (Local PC)"]
-    UI["Lilot UI (Streamlit Web UI)"]
-    SP["system_prompt.txt"]
-    KB["knowledge.txt"]
-    Uploads["uploads/（追加ファイル）"]
-    Emb["Local MiniLM Embedding Model<br>all-MiniLM-L6-v2"]
-    API["Optional: OpenAI / Azure / RakutenAI / OpenAI-Compatible API"]
-    Logs["Local Chat Logs<br>(logs/*.jsonl)"]
-
-    User --> UI
-
-    subgraph "Local Knowledge Search"
-        UI --> KB
-        KB --> UI
-        UI --> Uploads
-        Uploads --> UI
-        UI --> Emb
-        Emb --> UI
-    end
-
-    subgraph "LLM (Optional API Mode)"
-        UI --> API
-        API --> UI
-    end
-
-    UI --> SP
-    UI --> Logs
-```
-
 ## ✨ Features
-🔍 ローカル検索
-Embedding検索（MiniLM-L6-v2 ローカル動作）
+### 🔍 Embedding検索（ローカル/リモート切替）
+- ローカル：`sentence-transformers/all-MiniLM-L6-v2`
+- リモート：`.env` に `EMB_API_KEY` を設定すると OpenAI互換 Embedding API を使用
 
-🧠 LLM連携（任意）
-OpenAI/Azure OpenAI/任意の OpenAI 互換 API
-（例：self-hosted LM Studio、LocalAI など）
+### 📎 添付ファイル（アップロード）
+Streamlit UI からファイルをアップロードできます。
 
-📂 ナレッジ管理
-knowledge.txt を編集するだけで即反映
-uploads/ 下の txt / md / csv も自動で検索対象
+- 対応：`txt` / `csv` / `pdf`（複数PDFアップロード可）
+- 保存先：`data/uploads/`
+- アップロード後、**検索インデックスに反映**（UIから「保存して取り込む」を実行）
 
-💾 完全ローカル保存
-ナレッジファイル
-system_prompt.txt
-会話ログ
-アップロードファイル
-→ 外部に送信されるのは LLM に渡す上位数文のみ
+> PDFは `pypdf` によるテキスト抽出です。画像PDF（スキャンのみ等）は文字が取れない場合があります。
 
-🛡️ 高いセキュリティ
-Embedding はローカルモデル → 外部送信ゼロ
-通信は HTTPS（API 利用時）
-セッションはステートレス（API 側にログは残らない）
+#### PDFの「再抽出しない」仕組み（起動を軽くするため）
+- PDFは **アップロード時にテキスト抽出 → JSON保存** します
+- 次回以降の起動時は **PDF本体を再抽出せず**、抽出済みJSONを読み込みます
+- PDFが更新された場合（ファイル内容が変わった場合）は、再アップロードで再抽出されます
 
-💻 簡単セットアップ
-setup.bat を実行するだけ
-（Miniforge 検出 → パッケージインストール → ショートカット作成）
+---
 
 ## 📁 Folder Structure
 ```
 lilot/
 ├── app/
-│   ├── app_kwm.py                # キーワード検索版
-│   ├── app_emb.py                # Embedding検索版
+│   └── app_emb.py                  # Embedding検索版（本体）
 ├── data/
-│   ├── knowledge.txt             # ローカルナレッジ
-│   ├── system_prompt.txt         # LLM振る舞い設定
-│   └── uploads/                  # 追加ファイル
+│   ├── knowledge.txt               # メインナレッジ
+│   ├── system_prompt.txt           # LLM振る舞い設定
+│   └── uploads/                    # 添付ファイル保存先
+│       ├── original/               # 元ファイル（txt/csv/pdf）
+│       ├── extracted/              # PDF抽出テキスト（json）
+│       └── index_meta.json         # 抽出/更新管理（内部用）
 ├── models/
-│   └── all-MiniLM-L6-v2/         # ローカルEmbeddingモデル
+│   └── all-MiniLM-L6-v2/           # ローカルEmbeddingモデル（任意配置）
 ├── logs/
-│   └── YYYYMMDD_xxx.jsonl        # チャットログ
-├── run_app_kwm.bat               # キーワード検索版起動
-├── run_app_emb.bat               # Embedding検索版起動
-├── install_requirements_conda.bat
-├── setup.bat
-├── requirements.txt
+│   └── YYYYMMDD_xxx.jsonl          # チャットログ
+├── run_app_emb.bat                 # 起動（Embedding）
+├── install_requirements_conda.bat  # 依存インストール（Miniforge base）
+├── setup.bat                       # セットアップ（環境構築）
+├── requirements.txt                # Python依存
 └── README.md
 ```
-## 🔧 Technical Specification
-項目	内容
-------------------
-言語	Python 3.10+
-UI	Streamlit
-検索方式	Keyword / Embedding
-Embedding	MiniLM-L6-v2（ローカル埋め込みモデル）
-LLM API	OpenAI / Azure / OpenAI互換API
-設定	.env に API情報を記述（未設定ならローカルのみで動作）
-保存	すべてローカル保存
-キャッシュ	Streamlit cache_data
 
-## 🔍 Search Logic
-Embedding Search（MiniLM）
-knowledge.txt を段落に分割
-MiniLM-L6-v2（ローカル）でベクトル化
-cosine 類似度で類似上位文抽出
-必要に応じて LLM へ渡す
+---
 
-## 🔐 Security Notes
-LLM API は ステートレス
-→ 質問・コンテキストが「学習」されたりサーバに保存されることはない
-knowledge.txt / uploads / logs はすべて ローカルのみ
-API利用時も送信されるのは 上位数文のみ
-## 🧑‍💻 Setup Guide
-1. お使いのWindowsパソコンにMiniforge をインストール。その際、インストールフォルダは　C:\Users\<User Name>\miniforge3　とする。
-https://github.com/conda-forge/miniforge
-2. こちらの[アドレス](https://github.com/ganase/lilot)を開き、Codeボタンをクリック→Download ZIPを選択。
-3. lilot-main.zip をパソコンの任意のフォルダにダウンロード。ZIPを解凍して、出てきたフォルダを任意の場所に保存する。（例：C:\lilot\*.*）
-5. ローカルモデルを設置→[こちらを参照](https://github.com/ganase/lilot/tree/main/models#all-minilm-l6)
-6.  C:\lilot\setup.bat を実行（Miniforge 自動検出, 必要モジュールインストール, Desktop にショートカット作成）
-7. 起動：デスクトップの　lilot　のアイコンをダブルクリック
-8. ブラウザが立ち上がったら左下の 「.env編集」を展開、「.envを編集」をクリック
-9. 別途案内している情報を　.env　に記入してメモ帳を保存。※ .env, knowledge.txtなどローカルファイルの変更後、有効にするにはlilot再起動が必要です。
-10. Lilotが開いているブラウザを閉じる。
-11. コマンドプロンプトを開いてCTRL+Cを押下。Terminate batch job (Y/N)?にYで応答
-12. デスクトップの　lilot　のアイコンをダブルクリック。チャットを開始できます。
+## 🧑‍💻 Setup Guide（Windows）
+### 1) Miniforge をインストール
+- 既にある場合は不要
+- 既定パス：`%USERPROFILE%\miniforge3`
 
-## 📌 Usage Example
-knowledge.txt を書き換えるだけで検索結果に反映されます。
-【保険金請求の流れ】
-1. 必要書類を提出
-2. 審査が行われる
-3. 通常5営業日以内に振込
-## 📝 License (MIT)
+### 2) セットアップ
+- `setup.bat` を実行（推奨）
+  - 依存ライブラリのインストール
+  - 必要に応じてショートカット作成（構成による）
+
+### 3) 起動
+- `run_app_emb.bat` を実行
+
+---
+
+## ⚙️ .env 設定（任意）
+プロジェクト直下の `.env` に以下を設定できます。
+
+### LLM（回答生成）
+- `LLM_API_KEY`
+- `LLM_BASE_URL`（例：`https://api.openai.com/v1` / Azure / ローカルAPI）
+- `LLM_MODEL`（例：`gpt-4o-mini` 等）
+
+### Embedding（リモートに切替）
+- `EMB_API_KEY`（これが入るとリモートEmbeddingを使用）
+- `EMB_BASE_URL`（既定：`https://api.openai.com/v1`）
+- `EMB_MODEL`（既定：`text-embedding-3-small`）
+
+---
+
+## 🧩 ナレッジの更新方法
+- `data/knowledge.txt` を編集 → 次回検索から反映
+- UI の「📎 添付ファイル」からアップロード → `data/uploads/original/` に保存 → 「保存して取り込む」実行で検索対象に反映
+
+---
+
+## 🧾 ログ
+- 会話ログは `logs/*.jsonl` に保存されます
+- UI 左ペインの「🧾 ログ」からログを読み込めます（→ボタン）
+
+---
+
+## 🛠️ Troubleshooting
+- **起動しない / Miniforgeが見つからない**  
+  `run_app_emb.bat` が `%USERPROFILE%\miniforge3\python.exe` を探します。  
+  Miniforgeのインストール先が違う場合は、`run_app_emb.bat` の `CONDA_ROOT` を変更してください。
+
+- **PDFが検索にヒットしない**  
+  画像PDF（スキャン）だとテキスト抽出できません。テキスト付きPDFでお試しください。  
+  また、アップロード後に「保存して取り込む」を実行したか確認してください。
+
+---
+
+## 📝 License
 MIT License
-Copyright (c) 2025
-
-```
