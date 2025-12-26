@@ -1,0 +1,15 @@
+{
+  "fuyou_nintei_syorui.pdf": {
+    "sha256": "434bb2278de28c1cfbeff44d414e7fc7bd72ec045bc498708c55a60796a5ee23",
+    "status": "ready",
+    "pages": 1,
+    "chars": 2419
+  },
+  "RAGが苦手な「膨大な会話データ」を検索可能に_2512.12818v1.pdf": {
+    "sha256": "1c0bb9fd4e53f45107e587766d6fc3b4b3441877567b17bdbbb5172015c120d4",
+    "status": "ready",
+    "pages": 28,
+    "chars": 267113,
+    "chunks": 1042
+  }
+}
