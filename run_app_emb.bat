@@ -1,49 +1,66 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 
-rem ==============================
-rem  Locallm embedding launcher
-rem ==============================
+rem ============================================
+rem  Lilot (Embedding Search) Launcher
+rem  - Streamlit app: app\app_emb.py
+rem  - Python: Miniforge (base) at %USERPROFILE%\miniforge3
+rem ============================================
 
-rem Move to this script directory
+rem Move to this script directory (project root)
 cd /d "%~dp0"
 
-echo [INFO] Locallm (embedding) starting ...
-
-rem Miniforge activate.bat (fixed path)
-set "MINIFORGE_ACT=%USERPROFILE%\miniforge3\Scripts\activate.bat"
-
-rem ---- Miniforge check (no parentheses version) ----
-if exist "%MINIFORGE_ACT%" goto HAVE_MINIFORGE
-
-echo [ERROR] Miniforge not found at:
-echo         "%MINIFORGE_ACT%"
+echo ============================================
+echo  Lilot (Embedding Search) Starting...
+echo  Project: %CD%
+echo ============================================
 echo.
-echo Please install Miniforge (miniforge3) and retry.
+
+rem --- Miniforge (Miniconda) root ---
+set "CONDA_ROOT=%USERPROFILE%\miniforge3"
+set "PYTHON_EXE=%CONDA_ROOT%\python.exe"
+
+if not exist "%PYTHON_EXE%" (
+    echo [ERROR] Miniforge Python not found:
+    echo         "%PYTHON_EXE%"
+    echo.
+    echo         Please install Miniforge OR run setup.bat first.
+    echo         Miniforge: https://github.com/conda-forge/miniforge
+    echo.
+    pause
+    exit /b 1
+)
+
+set "APP_PATH=app\app_emb.py"
+if not exist "%APP_PATH%" (
+    echo [ERROR] Streamlit app not found:
+    echo         "%CD%\%APP_PATH%"
+    echo.
+    echo         Expected folder structure:
+    echo           lilot\
+    echo             app\app_emb.py
+    echo             data\knowledge.txt
+    echo.
+    pause
+    exit /b 1
+)
+
+rem Optional: reduce Streamlit telemetry prompts
+set "STREAMLIT_BROWSER_GATHER_USAGE_STATS=false"
+rem Ensure UTF-8 on Windows console & file IO where possible
+set "PYTHONUTF8=1"
+
+echo [INFO] Using Python: "%PYTHON_EXE%"
+echo [INFO] Launching: streamlit run "%APP_PATH%"
 echo.
-pause
-goto END
 
-:HAVE_MINIFORGE
-echo [INFO] Activating Miniforge base ...
-call "%MINIFORGE_ACT%" base
-
-if errorlevel 1 goto ACTIVATE_ERROR
-
-echo [INFO] Launching Streamlit app (embedding version) ...
-python -m streamlit run app\app_emb.py
+"%PYTHON_EXE%" -m streamlit run "%APP_PATH%"
+set "ERR=%ERRORLEVEL%"
 
 echo.
-echo [INFO] Streamlit exited. Press any key to close.
-pause
-goto END
+echo [INFO] Streamlit exited (code=%ERR%).
+echo       Press any key to close.
+pause >nul
 
-:ACTIVATE_ERROR
-echo [ERROR] Failed to activate Miniforge base.
-echo        Try running the following manually:
-echo          "%MINIFORGE_ACT%" base
-echo.
-pause
-
-:END
 endlocal
+exit /b %ERR%

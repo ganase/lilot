@@ -4,3 +4,4 @@ openai
 faiss-cpu
 numpy
 sentence-transformers>=2.7,<3
+pypdf
